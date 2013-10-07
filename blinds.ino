@@ -66,8 +66,8 @@ Adafruit_MotorShield AFMS = Adafruit_MotorShield();
 
 // Connect a stepper motor with 200 steps per revolution (1.8 degree)
 // to motor port #2 (M3 and M4)
-Adafruit_StepperMotor *myMotor = AFMS.getStepper(200, 2);
-boolean blinds_open = false; //intital state of blinds are closed
+Adafruit_StepperMotor *myMotor = AFMS.getStepper(200, 1);
+boolean blinds_open = true; //intital state of blinds are closed
 boolean time_set = false;
 
 
@@ -114,7 +114,8 @@ void loop()
     // updown = 1 for up, 0 for down
     boolean updown = getupdown(XOB.getMessage("switch"));
     int waketime = getwaketime(XOB.getMessage("value")); 
-    Serial.println(waketime);
+    //Serial.println(waketime);
+    Serial.println(second());
     
     // Set time if it is not set.
     if (!time_set) {
@@ -123,26 +124,26 @@ void loop()
     }
     
     //Check for roll up. Then Roll up blinds
-    /*if (updown && blinds_open == false) {
+   /* if (updown && blinds_open == false) {
       Serial.println("Rolling Up Blinds");
-      rollup_blinds_slow();
+      rollup_blinds_fast();
       blinds_open = true;
     }
-  
+  */
     // check roll down conditions
-     if (!updown && blinds_open == true) {
+  /*   if (!updown && blinds_open == true) {
       Serial.println("Rolling Down Blinds");
       rolldown_blinds_fast();
       blinds_open = false;
     }
-   /* 
+    */
     // rise up blinds slowly if the wake time is + or - 1 minute and if the blinds are closed.
-   /* if((waketime == getcurrenttime() || waketime == (getcurrenttime() - 1) || waketime == (getcurrenttime() + 1)) && blinds_open == false ){
+   if((waketime == getcurrenttime() || waketime == (getcurrenttime() - 1) || waketime == (getcurrenttime() + 1)) && blinds_open == false ){
         Serial.println("Natural Wakeup");
         rollup_blinds_slow();
         blinds_open = true; // blinds should be open now.
     }
- */
+
     
     
   }
@@ -182,19 +183,19 @@ int getwaketime(String value) {
 }
 
 void rollup_blinds_slow() {
-  myMotor->setSpeed(10);
-  myMotor->step(2000, FORWARD, SINGLE);
+  myMotor->setSpeed(1);
+  myMotor->step(2000, BACKWARD, SINGLE);
   myMotor->release();
 }
 
 void rollup_blinds_fast() {
   myMotor->setSpeed(100);
-  myMotor->step(2000, FORWARD, SINGLE);
+  myMotor->step(2000, BACKWARD, SINGLE);
   myMotor->release();
 }
 
 void rolldown_blinds_fast() {
   myMotor->setSpeed(100);
-  myMotor->step(2000, BACKWARD, SINGLE);
+  myMotor->step(2000, FORWARD, SINGLE);
   myMotor->release();
 }
