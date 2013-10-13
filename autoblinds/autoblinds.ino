@@ -1,34 +1,4 @@
 
-////////////////////////////////////////////////////////////////////////////
-//
-//  XOBXOB Blink :: Ethernet Shield
-// 
-//  This sketch connects to the XOBXOB IoT platform using an Arduino Ethernet shield. 
-// 
-//
-//  The MIT License (MIT)
-//  
-//  Copyright (c) 2013 Robert W. Gallup, XOBXOB
-//  
-//  Permission is hereby granted, free of charge, to any person obtaining a copy
-//  of this software and associated documentation files (the "Software"), to deal
-//  in the Software without restriction, including without limitation the rights
-//  to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-//  copies of the Software, and to permit persons to whom the Software is
-//  furnished to do so, subject to the following conditions:
-//  
-//  The above copyright notice and this permission notice shall be included in
-//  all copies or substantial portions of the Software.
-//  
-//  THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-//  IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-//  FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-//  AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-//  LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-//  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
-//  THE SOFTWARE.// 
-
-// All of these includes are required
 
 #include <XOBXOB_Ethernet.h>
 #include <Ethernet.h>
@@ -67,7 +37,7 @@ Adafruit_MotorShield AFMS = Adafruit_MotorShield();
 // Connect a stepper motor with 200 steps per revolution (1.8 degree)
 // to motor port #2 (M3 and M4)
 Adafruit_StepperMotor *myMotor = AFMS.getStepper(200, 1);
-boolean blinds_open = true; //intital state of blinds are closed
+boolean blinds_open = false; //intital state of blinds are closed
 boolean time_set = false;
 
 
@@ -115,7 +85,7 @@ void loop()
     boolean updown = getupdown(XOB.getMessage("switch"));
     int waketime = getwaketime(XOB.getMessage("value")); 
     //Serial.println(waketime);
-    Serial.println(second());
+    //Serial.println(second());
     
     // Set time if it is not set.
     if (!time_set) {
@@ -138,10 +108,19 @@ void loop()
     }
     */
     // rise up blinds slowly if the wake time is + or - 1 minute and if the blinds are closed.
-   if((waketime == getcurrenttime() || waketime == (getcurrenttime() - 1) || waketime == (getcurrenttime() + 1)) && blinds_open == false ){
+    Serial.println(waketime);
+    Serial.println(getcurrenttime());
+    Serial.println(blinds_open);
+   if((waketime == getcurrenttime() /*|| waketime == (getcurrenttime() - 1) || waketime == (getcurrenttime() + 1)*/) && blinds_open == false){
         Serial.println("Natural Wakeup");
         rollup_blinds_slow();
         blinds_open = true; // blinds should be open now.
+    }
+    
+    //rolldown blinds at 20:00
+    if(blinds_open == true && getcurrenttime() >= 1200 ) {
+      rolldown_blinds_fast();
+      blinds_open = false;
     }
 
     
@@ -159,9 +138,9 @@ void setthetime (String text) {
   int sethour = text.substring(1,3).toInt();
   int setminute = text.substring(3,5).toInt();
   setTime(sethour, setminute, 0, 22, 9, 2013); 
-  Serial.println(hour());
-  Serial.print(":");
-  Serial.print(minute());
+  //Serial.print(hour());
+  //Serial.print(":");
+  //Serial.print(minute());
   
 }
 
@@ -183,8 +162,8 @@ int getwaketime(String value) {
 }
 
 void rollup_blinds_slow() {
-  myMotor->setSpeed(1);
-  myMotor->step(2000, BACKWARD, SINGLE);
+  myMotor->setSpeed(5);
+  myMotor->step(2000, BACKWARD, MICROSTEP);
   myMotor->release();
 }
 
